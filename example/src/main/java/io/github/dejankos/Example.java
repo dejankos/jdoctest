@@ -25,6 +25,12 @@ public class Example {
      *     int res = publicMethod(a, b);
      *     System.out.println(res);
      *     }
+     *     Other example
+     *     {@code
+     *     import java.util.HashMap;
+     *
+     *     System.out.println("lalal");
+     *           }
      * </pre>
      * </jdoctest>
      *

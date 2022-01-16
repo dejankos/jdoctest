@@ -10,4 +10,19 @@
   <artifactId>lib</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>lib</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>fr.inria.gforge.spoon</groupId>
+      <artifactId>spoon-core</artifactId>
+      <version>10.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.michael-bull.kotlin-result</groupId>
+      <artifactId>kotlin-result</artifactId>
+      <version>1.1.14</version>
+    </dependency>
+  </dependencies>
+
 </project>
