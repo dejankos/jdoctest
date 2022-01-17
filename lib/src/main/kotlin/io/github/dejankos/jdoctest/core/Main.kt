@@ -24,5 +24,8 @@ fun main(args: Array<String>) {
 //            }
 //        }
 
-    DocTestParser("../jdoctest/example/src/main/java/").extract()
+    val extract = DocTestParser("../jdoctest/example/src/main/java/").extract()
+    extract.forEach {
+        println(it)
+    }
 }
