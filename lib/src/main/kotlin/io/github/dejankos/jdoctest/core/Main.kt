@@ -1,5 +1,7 @@
 package io.github.dejankos.jdoctest.core
 
+import com.github.michaelbull.result.getOrElse
+
 fun main(args: Array<String>) {
 //    val spoon = Launcher()
 //    spoon.addInputResource("../jdoctest/example/src/main/java/")
@@ -25,7 +27,8 @@ fun main(args: Array<String>) {
 //        }
 
     val extract = DocTestParser("../jdoctest/example/src/main/java/").extract()
-    extract.forEach {
+    val orElse = extract.getOrElse { null }
+    orElse?.forEach {
         println(it)
     }
 }
