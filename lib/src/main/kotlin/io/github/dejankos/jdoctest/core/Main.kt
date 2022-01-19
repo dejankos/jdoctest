@@ -27,8 +27,7 @@ fun main(args: Array<String>) {
 //        }
 
     val extract = DocTestParser("../jdoctest/example/src/main/java/").extract()
-    val orElse = extract.getOrElse { null }
-    orElse?.forEach {
+    extract.forEach {
         println(it)
     }
 }

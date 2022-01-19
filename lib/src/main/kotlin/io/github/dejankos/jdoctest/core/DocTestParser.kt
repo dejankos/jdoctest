@@ -1,9 +1,5 @@
 package io.github.dejankos.jdoctest.core
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.getOrElse
 import spoon.Launcher
 import spoon.javadoc.internal.JavadocInlineTag
 import spoon.javadoc.internal.JavadocSnippet
@@ -13,40 +9,27 @@ import spoon.reflect.code.CtJavaDoc
 import spoon.reflect.declaration.CtClass
 import spoon.reflect.visitor.filter.TypeFilter
 
-internal class DocTestParser(private val path: String) {
+class DocTestParser(private val path: String) {
 
     companion object {
         private val classFilter = TypeFilter(CtClass::class.java)
     }
 
-    internal fun extract(): Result<List<DocTestClassData>, ParseError> {
-        var error: ParseError? = null
-        val docsCode = mutableListOf<DocTestClassData>()
-
-        buildModel().getElements(classFilter).forEach main@{ ctClass ->
+    internal fun extract(): List<DocTestClassData> {
+        return buildModel().getElements(classFilter).flatMap { ctClass ->
             val allClassComments = ctClass.comments.toMutableList()
             ctClass.methods.forEach { allClassComments.addAll(it.comments) }
 
-            for (c in allClassComments) {
-                val classDocsCode = extractDocTest(c)
-                    .getOrElse {
-                        error = it
-                        return@main
-                    }
-
-                if (classDocsCode.isNotEmpty())
-                    docsCode += DocTestClassData(ctClass.getClassContext(), classDocsCode)
-            }
+            allClassComments
+                .map { extractDocTest(it) }
+                .filter { it.isNotEmpty() }
+                .map { DocTestClassData(ctClass.getClassContext(), it) }
         }
-
-        return error?.let {
-            Err(it)
-        } ?: Ok(docsCode)
     }
 
     private fun extractDocTest(comment: CtComment) = when {
-        comment.isNotJavadoc() -> Ok(emptyList())
-        comment.isNotDocTest() -> Ok(emptyList())
+        comment.isNotJavadoc() -> emptyList()
+        comment.isNotDocTest() -> emptyList()
         else -> parseJavadoc(comment)
     }
 
@@ -56,7 +39,7 @@ internal class DocTestParser(private val path: String) {
         return spoon.buildModel()
     }
 
-    private fun parseJavadoc(comment: CtComment): Result<List<DocTestCode>, ParseError> {
+    private fun parseJavadoc(comment: CtComment): List<DocTestCode> {
         var state = DocTestState.NONE
         val res = mutableListOf<DocTestCode>()
         for (e in comment.asJavaDoc().javadocElements) {
@@ -80,8 +63,8 @@ internal class DocTestParser(private val path: String) {
         }
 
         return when (state) {
-            DocTestState.CLOSED -> Ok(res)
-            else -> Err(ParseError("JDocTest parse error; javadoc fragment ${comment.docComment}"))
+            DocTestState.CLOSED -> res
+            else -> throw ParseException("JDocTest parse error; javadoc fragment ${comment.docComment}")
         }
     }
 
@@ -109,6 +92,7 @@ internal class DocTestParser(private val path: String) {
 
     private fun CtClass<*>.getClassContext() = ClassContext(
         this.`package`.qualifiedName,
+        this.simpleName,
         this.getUsedTypes(false).map { it.toString() }
     )
 
@@ -123,15 +107,12 @@ internal class DocTestParser(private val path: String) {
 
     data class ClassContext(
         val classPackage: String,
+        val className: String,
         val classImports: List<String>,
     )
 
     data class DocTestCode(
         val docTestImports: List<String>,
         val docTestCode: List<String>
-    )
-
-    data class ParseError(
-        val error: String
     )
 }
