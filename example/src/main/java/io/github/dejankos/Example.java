@@ -12,7 +12,6 @@ public class Example {
      * Constructor
      */
     public Example() {
-
     }
 
     /**
@@ -22,14 +21,18 @@ public class Example {
      *     {@code
      *     int a = 5;
      *     String b = "abc";
-     *     int res = publicMethod(a, b);
+     *     String res = a + "" + b;
      *     System.out.println(res);
      *     }
      *     Other example
      *     {@code
      *     import java.util.HashMap;
-     *
-     *     System.out.println("lalal");
+     *     import io.github.dejankos.jdoctest.core.JDocTestException;
+     *     //lalalal
+     *     ;;
+     *     new HashMap<String, String>();
+     *     throw new JDocTestException();
+     *     //System.out.println("lalal");
      *           }
      * </pre>
      * </jdoctest>
