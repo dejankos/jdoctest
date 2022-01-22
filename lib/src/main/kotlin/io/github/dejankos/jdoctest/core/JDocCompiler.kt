@@ -4,61 +4,109 @@ import org.slf4j.LoggerFactory
 import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
-import javax.tools.*
-import kotlin.io.path.*
+import java.util.Locale
+import javax.tools.Diagnostic
+import javax.tools.DiagnosticCollector
+import javax.tools.JavaFileObject
+import javax.tools.ToolProvider
+import kotlin.io.path.deleteExisting
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.writeBytes
 
 class JDocCompiler(
     private val docsTest: List<DocTestParser.DocTestClassData>
 ) {
     private val log = LoggerFactory.getLogger("JDocTestCompiler")
+    private val jDocTestPath by lazy {
+        Path.of(System.getProperty("java.io.tmpdir"), "jdoctest_compile")
+    }
 
-    fun compile() {
-        val dir = createTempDirectory("jdoctest_compile")
-
-        for (docTestClassData in docsTest) {
-            for (docTestCode in docTestClassData.docsCode) {
-                val classAsString = bindDocTestCode(docTestClassData.classCtx, docTestCode)
-
-                val classDir = Files.createDirectory(Path.of(dir.toString(), "${System.currentTimeMillis()}"))
-
-                val jdocDir = Files.createDirectories(
-                    Path.of(classDir.toString(),  "io", "github", "dejankos")
-                )
-
-                val temp = Files.createFile(
-                    Path.of(jdocDir.toString(), "${docTestClassData.classCtx.className}_JDocTest.java")
-                )
-                temp.writeBytes(classAsString.toByteArray())
-
-                val compiler: JavaCompiler = ToolProvider.getSystemJavaCompiler()
-                val diagnostics = DiagnosticCollector<JavaFileObject>()
-                val fileManager = compiler.getStandardFileManager(diagnostics, null, null)
-
-                val fileObject = fileManager.getJavaFileObjects(temp)
-
-                val call = compiler.getTask(null, fileManager, diagnostics, null, null, fileObject).call()
-
-                val classLoader = URLClassLoader.newInstance(arrayOf(classDir.toUri().toURL()))
-
-                val cls = classLoader.loadClass("io.github.dejankos.Example_JDocTest")
-
-                val newInstance = cls.getDeclaredConstructor().newInstance() as Runnable
-                newInstance.run()
-
-                diagnostics.diagnostics.forEach {
-                    when (it.kind) {
-                        Diagnostic.Kind.ERROR -> throw CompileException(it.getMessage())
-                        Diagnostic.Kind.WARNING, Diagnostic.Kind.MANDATORY_WARNING -> log.warn(it.getMessage())
-                        Diagnostic.Kind.NOTE -> log.info(it.getMessage())
-                        else -> {
-                        }
-                    }
-                }
+    fun runAll() {
+        scopedDir(jDocTestPath) { _ ->
+            docsTest.forEach { docTestClassData ->
+                runClassDocTest(docTestClassData)
             }
         }
-//        dir.listDirectoryEntries().forEach { it.deleteExisting() }
-//        dir.deleteExisting()
+    }
+
+    private fun runClassDocTest(
+        docTestClassData: DocTestParser.DocTestClassData
+    ) {
+        docTestClassData.docsCode.forEach { docTestCode ->
+            scopedDir(Path.of(jDocTestPath.toString(), "${System.currentTimeMillis()}")) { classDir ->
+                compileJDocTest(classDir, docTestClassData.classCtx, docTestCode)
+                createClassInstance(classDir, docTestClassData.classCtx.fullJDocTestClassName()).run()
+            }
+        }
+    }
+
+    private fun compileJDocTest(
+        workingDir: Path,
+        classCtx: DocTestParser.ClassContext,
+        docTestCode: DocTestParser.DocTestCode
+    ) {
+        val source = createClassSource(workingDir, classCtx, docTestCode)
+        compileClassSource(source).diagnostics.forEach {
+            @Suppress("NON_EXHAUSTIVE_WHEN")
+            when (it.kind) {
+                Diagnostic.Kind.ERROR -> throw CompileException(
+                    it.getMessage(),
+                    it.lineNumber.toInt(),
+                    it.source.toString()
+                )
+                Diagnostic.Kind.WARNING, Diagnostic.Kind.MANDATORY_WARNING -> log.warn(it.getMessage())
+                Diagnostic.Kind.NOTE -> log.info(it.getMessage())
+            }
+        }
+    }
+
+    private fun createClassInstance(path: Path, fullClassName: String): Runnable {
+        val classLoader = URLClassLoader.newInstance(arrayOf(path.toUri().toURL()))
+        return classLoader.loadClass(fullClassName)
+            .getDeclaredConstructor()
+            .newInstance()
+            as Runnable
+    }
+
+    private fun createClassSource(
+        path: Path,
+        classCtx: DocTestParser.ClassContext,
+        docTestCode: DocTestParser.DocTestCode
+    ): Path {
+        val pkgDir = Files.createDirectories(
+            Path.of(
+                path.toString(),
+                *classCtx.classPackage.split(".").toTypedArray(),
+            )
+        )
+        val source = Files.createFile(
+            Path.of(pkgDir.toString(), "${classCtx.jDocTestClassName()}.java")
+        )
+
+        source.writeBytes(bindDocTestCode(classCtx, docTestCode).toByteArray())
+        return source
+    }
+
+    private fun compileClassSource(source: Path): DiagnosticCollector<JavaFileObject> {
+        val compiler = ToolProvider.getSystemJavaCompiler()
+        val diagnostics = DiagnosticCollector<JavaFileObject>()
+        val fileManager = compiler.getStandardFileManager(diagnostics, null, null)
+        fileManager.use {
+            val fileObject = fileManager.getJavaFileObjects(source)
+            compiler.getTask(null, fileManager, diagnostics, null, null, fileObject).call()
+        }
+
+        return diagnostics
+    }
+
+    private fun scopedDir(path: Path, f: (Path) -> Unit) {
+        val dir = Files.createDirectories(path)
+        try {
+            f(dir)
+        } finally {
+            deleteDir(path)
+        }
     }
 
     private fun bindDocTestCode(classContext: DocTestParser.ClassContext, docTestCode: DocTestParser.DocTestCode) =
@@ -74,6 +122,18 @@ class JDocCompiler(
             }
         """
 
+    private fun deleteDir(path: Path) {
+        if (path.isDirectory()) {
+            path.listDirectoryEntries().forEach {
+                deleteDir(it)
+            }
+        }
+
+        path.deleteExisting()
+    }
+
+    private fun DocTestParser.ClassContext.fullJDocTestClassName() = "${this.classPackage}.${this.jDocTestClassName()}"
+    private fun DocTestParser.ClassContext.jDocTestClassName() = "${this.className}_JDocTest"
     private fun List<String>.joinMultiline() = this.joinToString(separator = "\n") { it }
     private fun List<String>.joinAsImportMultiline() = this.joinToString(separator = "\n") { "import $it;" }
     private fun <S> Diagnostic<S>.getMessage() = this.getMessage(Locale.getDefault())

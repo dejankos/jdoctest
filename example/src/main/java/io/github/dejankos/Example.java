@@ -27,11 +27,9 @@ public class Example {
      *     Other example
      *     {@code
      *     import java.util.HashMap;
-     *     import io.github.dejankos.jdoctest.core.JDocTestException;
      *     //lalalal
      *     ;;
      *     new HashMap<String, String>();
-     *     throw new JDocTestException();
      *     //System.out.println("lalal");
      *           }
      * </pre>

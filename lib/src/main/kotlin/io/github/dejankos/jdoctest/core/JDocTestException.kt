@@ -7,5 +7,7 @@ data class ParseException(
 ) : JDocTestException()
 
 data class CompileException(
-    private val error: String
+    private val error: String,
+    private val line: Int,
+    private val source: String
 ) : JDocTestException()

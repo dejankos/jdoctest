@@ -5,6 +5,6 @@ class JDocTest {
     fun run(path: String) {
 
         val extract = DocTestParser(path).extract()
-        JDocCompiler(extract).compile()
+        JDocCompiler(extract).runAll()
     }
 }
