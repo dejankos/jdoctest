@@ -9,10 +9,7 @@ import javax.tools.Diagnostic
 import javax.tools.DiagnosticCollector
 import javax.tools.JavaFileObject
 import javax.tools.ToolProvider
-import kotlin.io.path.deleteExisting
-import kotlin.io.path.isDirectory
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.writeBytes
+import kotlin.io.path.*
 
 class JDocCompiler(
     private val docsTest: List<DocTestParser.DocTestClassData>
@@ -62,7 +59,10 @@ class JDocCompiler(
     }
 
     private fun createClassInstance(path: Path, fullClassName: String): Runnable {
-        val classLoader = URLClassLoader.newInstance(arrayOf(path.toUri().toURL()))
+        val classLoader = URLClassLoader.newInstance(arrayOf(path.toUri().toURL()
+        ,
+            Path("/home/dkos/IdeaProjects/testing_jdoctest/target/classes").toUri().toURL()
+        ))
         return classLoader.loadClass(fullClassName)
             .getDeclaredConstructor()
             .newInstance()
@@ -92,9 +92,14 @@ class JDocCompiler(
         val compiler = ToolProvider.getSystemJavaCompiler()
         val diagnostics = DiagnosticCollector<JavaFileObject>()
         val fileManager = compiler.getStandardFileManager(diagnostics, null, null)
+
+        val optionList: MutableList<String> = ArrayList()
+        optionList.add("-classpath")
+        optionList.add("/home/dkos/IdeaProjects/testing_jdoctest/target/classes")
+
         fileManager.use {
             val fileObject = fileManager.getJavaFileObjects(source)
-            compiler.getTask(null, fileManager, diagnostics, null, null, fileObject).call()
+            compiler.getTask(null, fileManager, diagnostics, optionList, null, fileObject).call()
         }
 
         return diagnostics

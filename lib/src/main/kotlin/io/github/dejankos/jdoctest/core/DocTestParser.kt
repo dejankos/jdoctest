@@ -6,31 +6,37 @@ import spoon.javadoc.internal.JavadocSnippet
 import spoon.reflect.CtModel
 import spoon.reflect.code.CtComment
 import spoon.reflect.code.CtJavaDoc
-import spoon.reflect.declaration.CtClass
+import spoon.reflect.declaration.CtPackage
+import spoon.reflect.declaration.CtType
 import spoon.reflect.visitor.filter.TypeFilter
 
 class DocTestParser(private val path: String) {
 
     companion object {
-        private val classFilter = TypeFilter(CtClass::class.java)
+        private val javadocFilter = TypeFilter(CtJavaDoc::class.java)
     }
 
     internal fun extract(): List<DocTestClassData> {
-        return buildModel().getElements(classFilter).flatMap { ctClass ->
-            val allClassComments = ctClass.comments.toMutableList()
-            ctClass.methods.forEach { allClassComments.addAll(it.comments) }
-
-            allClassComments
-                .map { extractDocTest(it) }
-                .filter { it.isNotEmpty() }
-                .map { DocTestClassData(ctClass.getClassContext(), it) }
-        }
+        return buildModel().getElements(javadocFilter)
+            .filter { it.isJavadoc() }
+            .filter { it.isDocTest() }
+            .mapNotNull { jDoc ->
+                extractTypeData(jDoc)?.let {
+                    DocTestClassData(it, parseJavadoc(jDoc))
+                }
+            }
     }
 
-    private fun extractDocTest(comment: CtComment) = when {
-        comment.isNotJavadoc() -> emptyList()
-        comment.isNotDocTest() -> emptyList()
-        else -> parseJavadoc(comment)
+    private fun extractTypeData(comment: CtComment): ClassContext? {
+        var parent = comment.parent
+        while (parent != null && parent !is CtPackage) {
+            if (parent is CtType<*>) {
+                return parent.getClassContext()
+            }
+            parent = parent.parent
+        }
+
+        return null
     }
 
     private fun buildModel(): CtModel {
@@ -39,10 +45,10 @@ class DocTestParser(private val path: String) {
         return spoon.buildModel()
     }
 
-    private fun parseJavadoc(comment: CtComment): List<DocTestCode> {
+    private fun parseJavadoc(comment: CtJavaDoc): List<DocTestCode> {
         var state = DocTestState.NONE
         val res = mutableListOf<DocTestCode>()
-        for (e in comment.asJavaDoc().javadocElements) {
+        for (e in comment.javadocElements) {
             when (e) {
                 is JavadocSnippet -> {
                     if (e.toText().contains("<jdoctest>")) {
@@ -86,11 +92,11 @@ class DocTestParser(private val path: String) {
                 DocTestCode(imports, code)
             }
 
-    private fun CtComment.isNotDocTest() = !this.content.contains("jdoctest")
+    private fun CtComment.isDocTest() = this.content.contains("jdoctest")
 
-    private fun CtComment.isNotJavadoc() = this !is CtJavaDoc
+    private fun CtComment.isJavadoc() = this is CtJavaDoc
 
-    private fun CtClass<*>.getClassContext() = ClassContext(
+    private fun CtType<*>.getClassContext() = ClassContext(
         this.`package`.qualifiedName,
         this.simpleName,
         this.getUsedTypes(false).map { it.toString() }

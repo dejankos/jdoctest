@@ -2,6 +2,7 @@ package io.github.dejankos;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import io.github.dejankos.Example;
 
 /**
  * Example class
@@ -26,12 +27,9 @@ public class Example {
      *     }
      *     Other example
      *     {@code
-     *     import java.util.HashMap;
-     *     //lalalal
-     *     ;;
-     *     new HashMap<String, String>();
-     *     //System.out.println("lalal");
-     *           }
+     *
+     *     System.out.println(new Example());
+     *     }
      * </pre>
      * </jdoctest>
      *
