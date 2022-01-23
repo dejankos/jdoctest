@@ -27,6 +27,7 @@ public class Example {
      *     }
      *     Other example
      *     {@code
+     *     import io.github.dejankos.Example;
      *
      *     System.out.println(new Example());
      *     }

@@ -21,4 +21,22 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.github.dejankos</groupId>
+                <artifactId>plugin</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jdoctest</goal>
+                        </goals>
+                        <phase>verify</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

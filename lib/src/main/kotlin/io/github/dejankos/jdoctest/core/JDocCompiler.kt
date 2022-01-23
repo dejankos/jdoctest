@@ -16,7 +16,8 @@ import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.writeBytes
 
 class JDocCompiler(
-    private val docsTest: List<DocTestContext>
+    private val docsTest: List<DocTestContext>,
+    private val classpathElements: List<String>
 ) {
     private val log = LoggerFactory.getLogger(this::class.java)
     private val jDocTestPath by lazy {
@@ -29,6 +30,7 @@ class JDocCompiler(
     }
 
     fun runAll() {
+        adjustClasspath()
         scopedDir(jDocTestPath) { _ ->
             docsTest.forEach { ctx ->
                 runClassDocTest(ctx)
@@ -41,13 +43,12 @@ class JDocCompiler(
     ) {
         docTestContext.docsCode.forEach { docTestCode ->
             scopedDir(Path.of(jDocTestPath.toString(), "${System.currentTimeMillis()}")) { classDir ->
-                adjustClasspath()
+                println("cp" + System.getProperty(CP_PROPERTY))
                 try {
                     compileJDocTest(classDir, docTestContext.typeInfo, docTestCode)
                     createClassInstance(classDir, docTestContext.typeInfo.fullJDocTestClassName()).run()
-                }
-                catch (e: RuntimeException) {
-                    throw ExecutionException(e.message ?: "UNKNOWN", e)
+                } catch (t: Throwable) {
+                    throw ExecutionException(t.message ?: "UNKNOWN", t)
                 }
             }
         }
@@ -76,14 +77,18 @@ class JDocCompiler(
     private fun adjustClasspath() {
         System.setProperty(
             CP_PROPERTY,
-            System.getProperty(CP_PROPERTY) + File.pathSeparator + "target/classes"
+            System.getProperty(CP_PROPERTY) + (
+                classpathElements
+                    .joinToString(separator = "", prefix = File.pathSeparator) { it }
+                )
         )
     }
 
     private fun createClassInstance(path: Path, fullClassName: String): Runnable {
         val classLoader = URLClassLoader.newInstance(
             arrayOf(
-                path.toUri().toURL()
+                path.toUri().toURL(),
+                Path.of("/home/dkos/IdeaProjects/jdoctest/example/target/classes").toUri().toURL()
             )
         )
         return classLoader.loadClass(fullClassName)
@@ -116,21 +121,16 @@ class JDocCompiler(
         val diagnostics = DiagnosticCollector<JavaFileObject>()
         val fileManager = compiler.getStandardFileManager(diagnostics, null, null)
 
+        val optionList: MutableList<String> = ArrayList()
+        optionList.add("-classpath")
+        optionList.add("/home/dkos/IdeaProjects/jdoctest/example/target/classes")
+
         fileManager.use {
             val fileObject = fileManager.getJavaFileObjects(source)
-            compiler.getTask(null, fileManager, diagnostics, null, null, fileObject).call()
+            compiler.getTask(null, fileManager, diagnostics, optionList, null, fileObject).call()
         }
 
         return diagnostics
-    }
-
-    private fun scopedDir(path: Path, f: (Path) -> Unit) {
-        val dir = Files.createDirectories(path)
-        try {
-            f(dir)
-        } finally {
-            deleteDir(path)
-        }
     }
 
     private fun bindDocTestCode(typeInfo: TypeInfo, docTestCode: DocTestCode) =
@@ -145,6 +145,15 @@ class JDocCompiler(
                 }
             }
         """
+
+    private fun scopedDir(path: Path, f: (Path) -> Unit) {
+        val dir = Files.createDirectories(path)
+        try {
+            f(dir)
+        } finally {
+            deleteDir(path)
+        }
+    }
 
     private fun deleteDir(path: Path) {
         if (path.isDirectory()) {
