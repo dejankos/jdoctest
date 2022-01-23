@@ -1,6 +1,7 @@
 package io.github.dejankos.jdoctest.core
 
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Path
@@ -9,14 +10,22 @@ import javax.tools.Diagnostic
 import javax.tools.DiagnosticCollector
 import javax.tools.JavaFileObject
 import javax.tools.ToolProvider
-import kotlin.io.path.*
+import kotlin.io.path.deleteExisting
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.writeBytes
 
 class JDocCompiler(
     private val docsTest: List<DocTestParser.DocTestClassData>
 ) {
     private val log = LoggerFactory.getLogger("JDocTestCompiler")
     private val jDocTestPath by lazy {
-        Path.of(System.getProperty("java.io.tmpdir"), "jdoctest_compile")
+        Path.of(System.getProperty(TMP_DIR_PROPERTY), "jdoctest_compile")
+    }
+
+    private companion object {
+        const val CP_PROPERTY = "java.class.path"
+        const val TMP_DIR_PROPERTY = "java.io.tmpdir"
     }
 
     fun runAll() {
@@ -32,6 +41,7 @@ class JDocCompiler(
     ) {
         docTestClassData.docsCode.forEach { docTestCode ->
             scopedDir(Path.of(jDocTestPath.toString(), "${System.currentTimeMillis()}")) { classDir ->
+                adjustClasspath()
                 compileJDocTest(classDir, docTestClassData.classCtx, docTestCode)
                 createClassInstance(classDir, docTestClassData.classCtx.fullJDocTestClassName()).run()
             }
@@ -58,11 +68,19 @@ class JDocCompiler(
         }
     }
 
+    private fun adjustClasspath() {
+        System.setProperty(
+            CP_PROPERTY,
+            System.getProperty(CP_PROPERTY) + File.pathSeparator + "target/classes"
+        )
+    }
+
     private fun createClassInstance(path: Path, fullClassName: String): Runnable {
-        val classLoader = URLClassLoader.newInstance(arrayOf(path.toUri().toURL()
-        ,
-            Path("/home/dkos/IdeaProjects/testing_jdoctest/target/classes").toUri().toURL()
-        ))
+        val classLoader = URLClassLoader.newInstance(
+            arrayOf(
+                path.toUri().toURL()
+            )
+        )
         return classLoader.loadClass(fullClassName)
             .getDeclaredConstructor()
             .newInstance()
@@ -93,13 +111,9 @@ class JDocCompiler(
         val diagnostics = DiagnosticCollector<JavaFileObject>()
         val fileManager = compiler.getStandardFileManager(diagnostics, null, null)
 
-        val optionList: MutableList<String> = ArrayList()
-        optionList.add("-classpath")
-        optionList.add("/home/dkos/IdeaProjects/testing_jdoctest/target/classes")
-
         fileManager.use {
             val fileObject = fileManager.getJavaFileObjects(source)
-            compiler.getTask(null, fileManager, diagnostics, optionList, null, fileObject).call()
+            compiler.getTask(null, fileManager, diagnostics, null, null, fileObject).call()
         }
 
         return diagnostics
