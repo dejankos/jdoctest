@@ -1,10 +1,19 @@
 package io.github.dejankos.jdoctest.core
 
+import org.slf4j.LoggerFactory
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTimedValue
+
 class JDocTest {
+    private val log = LoggerFactory.getLogger(this::class.java)
 
-    fun run(path: String) {
-
-        val extract = DocTestParser(path).extract()
-        JDocCompiler(extract).runAll()
+    @OptIn(ExperimentalTime::class)
+    fun processSources(path: String) {
+        log.info("Running JDocTest on source path $path")
+        val (ctx, parseDuration) = measureTimedValue { DocTestParser(path).extract() }
+        log.info("Sources parsed in ${parseDuration.inWholeSeconds} sec")
+        val (_, runDuration) = measureTimedValue { JDocCompiler(ctx).runAll() }
+        log.info("Sources compiled and run in ${runDuration.inWholeSeconds} sec")
+        log.info("JDocTest successfully completed")
     }
 }

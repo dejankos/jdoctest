@@ -16,9 +16,9 @@ import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.writeBytes
 
 class JDocCompiler(
-    private val docsTest: List<DocTestParser.DocTestClassData>
+    private val docsTest: List<DocTestContext>
 ) {
-    private val log = LoggerFactory.getLogger("JDocTestCompiler")
+    private val log = LoggerFactory.getLogger(this::class.java)
     private val jDocTestPath by lazy {
         Path.of(System.getProperty(TMP_DIR_PROPERTY), "jdoctest_compile")
     }
@@ -30,30 +30,35 @@ class JDocCompiler(
 
     fun runAll() {
         scopedDir(jDocTestPath) { _ ->
-            docsTest.forEach { docTestClassData ->
-                runClassDocTest(docTestClassData)
+            docsTest.forEach { ctx ->
+                runClassDocTest(ctx)
             }
         }
     }
 
     private fun runClassDocTest(
-        docTestClassData: DocTestParser.DocTestClassData
+        docTestContext: DocTestContext
     ) {
-        docTestClassData.docsCode.forEach { docTestCode ->
+        docTestContext.docsCode.forEach { docTestCode ->
             scopedDir(Path.of(jDocTestPath.toString(), "${System.currentTimeMillis()}")) { classDir ->
                 adjustClasspath()
-                compileJDocTest(classDir, docTestClassData.classCtx, docTestCode)
-                createClassInstance(classDir, docTestClassData.classCtx.fullJDocTestClassName()).run()
+                try {
+                    compileJDocTest(classDir, docTestContext.typeInfo, docTestCode)
+                    createClassInstance(classDir, docTestContext.typeInfo.fullJDocTestClassName()).run()
+                }
+                catch (e: RuntimeException) {
+                    throw ExecutionException(e.message ?: "UNKNOWN", e)
+                }
             }
         }
     }
 
     private fun compileJDocTest(
         workingDir: Path,
-        classCtx: DocTestParser.ClassContext,
-        docTestCode: DocTestParser.DocTestCode
+        typeInfo: TypeInfo,
+        docTestCode: DocTestCode
     ) {
-        val source = createClassSource(workingDir, classCtx, docTestCode)
+        val source = createClassSource(workingDir, typeInfo, docTestCode)
         compileClassSource(source).diagnostics.forEach {
             @Suppress("NON_EXHAUSTIVE_WHEN")
             when (it.kind) {
@@ -89,20 +94,20 @@ class JDocCompiler(
 
     private fun createClassSource(
         path: Path,
-        classCtx: DocTestParser.ClassContext,
-        docTestCode: DocTestParser.DocTestCode
+        typeInfo: TypeInfo,
+        docTestCode: DocTestCode
     ): Path {
         val pkgDir = Files.createDirectories(
             Path.of(
                 path.toString(),
-                *classCtx.classPackage.split(".").toTypedArray(),
+                *typeInfo.`package`.split(".").toTypedArray(),
             )
         )
         val source = Files.createFile(
-            Path.of(pkgDir.toString(), "${classCtx.jDocTestClassName()}.java")
+            Path.of(pkgDir.toString(), "${typeInfo.jDocTestClassName()}.java")
         )
 
-        source.writeBytes(bindDocTestCode(classCtx, docTestCode).toByteArray())
+        source.writeBytes(bindDocTestCode(typeInfo, docTestCode).toByteArray())
         return source
     }
 
@@ -128,13 +133,13 @@ class JDocCompiler(
         }
     }
 
-    private fun bindDocTestCode(classContext: DocTestParser.ClassContext, docTestCode: DocTestParser.DocTestCode) =
+    private fun bindDocTestCode(typeInfo: TypeInfo, docTestCode: DocTestCode) =
         """
-            package ${classContext.classPackage};
-            ${classContext.classImports.joinAsImportMultiline()}
+            package ${typeInfo.`package`};
+            ${typeInfo.imports.joinAsImportMultiline()}
             ${docTestCode.docTestImports.joinMultiline()}
             
-            public class ${classContext.className}_JDocTest implements Runnable {
+            public class ${typeInfo.name}_JDocTest implements Runnable {
                 public void run() {
                     ${docTestCode.docTestCode.joinMultiline()}
                 }
@@ -151,8 +156,8 @@ class JDocCompiler(
         path.deleteExisting()
     }
 
-    private fun DocTestParser.ClassContext.fullJDocTestClassName() = "${this.classPackage}.${this.jDocTestClassName()}"
-    private fun DocTestParser.ClassContext.jDocTestClassName() = "${this.className}_JDocTest"
+    private fun TypeInfo.fullJDocTestClassName() = "${this.`package`}.${this.jDocTestClassName()}"
+    private fun TypeInfo.jDocTestClassName() = "${this.name}_JDocTest"
     private fun List<String>.joinMultiline() = this.joinToString(separator = "\n") { it }
     private fun List<String>.joinAsImportMultiline() = this.joinToString(separator = "\n") { "import $it;" }
     private fun <S> Diagnostic<S>.getMessage() = this.getMessage(Locale.getDefault())

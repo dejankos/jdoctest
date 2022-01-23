@@ -12,22 +12,22 @@ import spoon.reflect.visitor.filter.TypeFilter
 
 class DocTestParser(private val path: String) {
 
-    companion object {
+    private companion object {
         private val javadocFilter = TypeFilter(CtJavaDoc::class.java)
     }
 
-    internal fun extract(): List<DocTestClassData> {
+    internal fun extract(): List<DocTestContext> {
         return buildModel().getElements(javadocFilter)
             .filter { it.isJavadoc() }
             .filter { it.isDocTest() }
             .mapNotNull { jDoc ->
                 extractTypeData(jDoc)?.let {
-                    DocTestClassData(it, parseJavadoc(jDoc))
+                    DocTestContext(it, parseJavadoc(jDoc))
                 }
             }
     }
 
-    private fun extractTypeData(comment: CtComment): ClassContext? {
+    private fun extractTypeData(comment: CtComment): TypeInfo? {
         var parent = comment.parent
         while (parent != null && parent !is CtPackage) {
             if (parent is CtType<*>) {
@@ -96,7 +96,7 @@ class DocTestParser(private val path: String) {
 
     private fun CtComment.isJavadoc() = this is CtJavaDoc
 
-    private fun CtType<*>.getClassContext() = ClassContext(
+    private fun CtType<*>.getClassContext() = TypeInfo(
         this.`package`.qualifiedName,
         this.simpleName,
         this.getUsedTypes(false).map { it.toString() }
@@ -105,20 +105,4 @@ class DocTestParser(private val path: String) {
     private enum class DocTestState {
         NONE, OPEN, CLOSED
     }
-
-    data class DocTestClassData(
-        val classCtx: ClassContext,
-        val docsCode: List<DocTestCode>,
-    )
-
-    data class ClassContext(
-        val classPackage: String,
-        val className: String,
-        val classImports: List<String>,
-    )
-
-    data class DocTestCode(
-        val docTestImports: List<String>,
-        val docTestCode: List<String>
-    )
 }

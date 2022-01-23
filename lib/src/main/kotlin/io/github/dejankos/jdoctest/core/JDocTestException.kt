@@ -1,13 +1,21 @@
 package io.github.dejankos.jdoctest.core
 
-open class JDocTestException : RuntimeException()
+open class JDocTestException(
+    error: String,
+    cause: Throwable? = null
+) : RuntimeException(error, cause)
 
-data class ParseException(
-    private val error: String
-) : JDocTestException()
+class ParseException(
+    error: String
+) : JDocTestException(error)
 
-data class CompileException(
-    private val error: String,
+class CompileException(
+    error: String,
     private val line: Int,
     private val source: String
-) : JDocTestException()
+) : JDocTestException(error)
+
+class ExecutionException(
+    error: String,
+    cause: Throwable
+) : JDocTestException(error, cause)
