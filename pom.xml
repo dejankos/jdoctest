@@ -11,7 +11,7 @@
     <name>JDocTest</name>
 
     <modules>
-        <module>lib</module>
+        <module>core</module>
         <module>plugin</module>
         <module>example</module>
     </modules>

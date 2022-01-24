@@ -7,9 +7,9 @@
     <artifactId>jdoctest</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>lib</artifactId>
+  <artifactId>jdoctest-core</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>lib</name>
+  <name>core</name>
 
   <dependencies>
     <dependency>

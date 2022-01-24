@@ -8,7 +8,7 @@
         <artifactId>jdoctest</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>plugin</artifactId>
+    <artifactId>jdoctest-plugin</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>plugin</name>
     <packaging>maven-plugin</packaging>
@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>io.github.dejankos</groupId>
-            <artifactId>lib</artifactId>
+            <artifactId>jdoctest-core</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>

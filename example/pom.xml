@@ -8,14 +8,14 @@
         <artifactId>jdoctest</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>example</artifactId>
+    <artifactId>jdoctest-example</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>example</name>
 
     <dependencies>
         <dependency>
             <groupId>io.github.dejankos</groupId>
-            <artifactId>lib</artifactId>
+            <artifactId>jdoctest-core</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
