@@ -99,8 +99,19 @@ internal class DocTestParser(private val path: String) {
     private fun CtType<*>.getClassContext() = TypeInfo(
         this.`package`.qualifiedName,
         this.simpleName,
-        this.getUsedTypes(false).map { it.toString() }
+        this.getUsedTypes(false).map { it.toString().importTypeErase() }
     )
+
+    private fun String.importTypeErase() =
+        this.toCharArray()
+            .takeWhile { it != '<' }
+            .fold(StringBuilder()) { acc, next ->
+                acc.append(next)
+            }
+            .also {
+                it.append(";")
+            }
+            .toString()
 
     private enum class DocTestState {
         NONE, OPEN, CLOSED

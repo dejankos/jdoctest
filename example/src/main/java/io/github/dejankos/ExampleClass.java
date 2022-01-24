@@ -1,7 +1,7 @@
 package io.github.dejankos;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Example class
@@ -10,10 +10,19 @@ public class ExampleClass implements ExampleInterface {
 
     /**
      * Constructor
+     * <p>
+     * Example code ofc it works
+     * <pre>
+     * {@code
+     * // pls help me jDocTest you're my only hope
+     * let instance = nu ExmapleCluzz(got args?);
+     * }
+     * </pre>
      */
     public ExampleClass() {
     }
 
+    // doc in interface
     @Override
     public int methodA() {
         return 42;
@@ -23,15 +32,30 @@ public class ExampleClass implements ExampleInterface {
      * Some public method
      * <jdoctest>
      * <pre>
+     *     First example
      *     {@code
-     *     int a = 5;
-     *     String b = "abc";
-     *     String res = a + "" + b;
-     *     System.out.println(res);
+     *     ExampleClass e = new ExampleClass();
+     *     Map<String, String> map = e.getMap("k", "v");
+     *     assert map.size() == 1;
      *     }
-     *     Other example
+     *
+     *     Second example
+     *     Let's do something with it
      *     {@code
-     *     System.out.println(new ExampleClass());
+     *     ExampleClass e = new ExampleClass();
+     *     Map<String, String> map = e.getMap("k", "v");
+     *
+     *     assert map.size() == 1;
+     *
+     *     String v = map.get("k");
+     *     assert v.equals("v");
+     *
+     *     import java.util.HashSet;
+     *
+     *     java.util.Set<String> set = new HashSet<String>();
+     *     set.add(v);
+     *
+     *     assert set.size() == 1;
      *     }
      * </pre>
      * </jdoctest>
@@ -39,11 +63,11 @@ public class ExampleClass implements ExampleInterface {
      * @param a first
      * @param b second
      */
-    public int publicMethod(int a, String... b) {
-        System.out.println("a = " + a);
-        System.out.println("b = " + Arrays.toString(b));
-        new HashMap<String, String>();
-        return a;
+    public Map<String, String> getMap(String a, String b) {
+        HashMap<String, String> map = new HashMap<>();
+        map.put(a, b);
+
+        return map;
     }
 
     /**

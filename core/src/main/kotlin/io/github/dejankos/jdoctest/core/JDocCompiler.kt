@@ -81,6 +81,7 @@ internal class JDocCompiler(
         paths += path.toUri().toURL()
 
         val classLoader = URLClassLoader.newInstance(paths.toTypedArray())
+        classLoader.setDefaultAssertionStatus(true)
         return classLoader.loadClass(fullClassName)
             .getDeclaredConstructor()
             .newInstance()
