@@ -16,9 +16,7 @@ class JDocTestMojo : AbstractMojo() {
 
     override fun execute() {
         try {
-            System.setProperty("java.class.path", "/home/dkos/IdeaProjects/jdoctest/example/target/classes")
-
-            JDocTest().processSources(".", emptyList())
+            JDocTest().processSources(".", project.runtimeClasspathElements)
         } catch (e: RuntimeException) {
             throw MojoExecutionException(e.message, e)
         }

@@ -2,17 +2,21 @@ package io.github.dejankos;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import io.github.dejankos.Example;
 
 /**
  * Example class
  */
-public class Example {
+public class ExampleClass implements ExampleInterface {
 
     /**
      * Constructor
      */
-    public Example() {
+    public ExampleClass() {
+    }
+
+    @Override
+    public int methodA() {
+        return 42;
     }
 
     /**
@@ -27,9 +31,7 @@ public class Example {
      *     }
      *     Other example
      *     {@code
-     *     import io.github.dejankos.Example;
-     *
-     *     System.out.println(new Example());
+     *     System.out.println(new ExampleClass());
      *     }
      * </pre>
      * </jdoctest>

@@ -10,7 +10,7 @@ import spoon.reflect.declaration.CtPackage
 import spoon.reflect.declaration.CtType
 import spoon.reflect.visitor.filter.TypeFilter
 
-class DocTestParser(private val path: String) {
+internal class DocTestParser(private val path: String) {
 
     private companion object {
         private val javadocFilter = TypeFilter(CtJavaDoc::class.java)
