@@ -13,5 +13,6 @@ data class TypeInfo(
 
 data class DocTestCode(
     val docTestImports: List<String>,
-    val docTestCode: List<String>
+    val docTestCode: List<String>,
+    val originalContent: String
 )

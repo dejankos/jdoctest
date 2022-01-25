@@ -34,7 +34,7 @@ internal class DocTestParser(private val path: String) {
         while (parent != null && parent !is CtPackage) {
             if (parent is CtType<*>) {
                 return typeInfos.computeIfAbsent(parent.simpleName) {
-                    (parent as CtType<*>).getClassContext()
+                    (parent as CtType<*>).getTypeContext()
                 }
             }
             parent = parent.parent
@@ -74,7 +74,7 @@ internal class DocTestParser(private val path: String) {
 
         return when (state) {
             DocTestState.CLOSED -> res
-            else -> throw ParseException("JDocTest parse error; javadoc fragment ${comment.docComment}")
+            else -> throw ParseException("JDocTest parse error; javadoc fragment ${comment.docComment}", comment.content)
         }
     }
 
@@ -93,14 +93,14 @@ internal class DocTestParser(private val path: String) {
             }
             .run {
                 val (imports, code) = this
-                DocTestCode(imports, code)
+                DocTestCode(imports, code, javadoc.content)
             }
 
     private fun CtComment.isDocTest() = this.content.contains("jdoctest")
 
     private fun CtComment.isJavadoc() = this is CtJavaDoc
 
-    private fun CtType<*>.getClassContext() = TypeInfo(
+    private fun CtType<*>.getTypeContext() = TypeInfo(
         this.`package`.qualifiedName,
         this.simpleName,
         this.getUsedTypes(false).map { it.toString().importTypeErase() }

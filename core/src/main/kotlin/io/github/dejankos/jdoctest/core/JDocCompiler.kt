@@ -51,7 +51,7 @@ internal class JDocCompiler(
                 } catch (ce: CompileException) {
                     throw ce
                 } catch (t: Throwable) {
-                    throw ExecutionException(t.message ?: "UNKNOWN", t)
+                    throw ExecutionException(t.message ?: "UNKNOWN", t, docTestCode.originalContent)
                 }
             }
         }
@@ -68,6 +68,7 @@ internal class JDocCompiler(
             when (it.kind) {
                 Diagnostic.Kind.ERROR -> throw CompileException(
                     it.getMessage(),
+                    docTestCode.originalContent,
                     it.lineNumber.toInt(),
                     it.source.toString()
                 )
@@ -81,8 +82,9 @@ internal class JDocCompiler(
         val paths = classpathElements.map { Path.of(it).toUri().toURL() }.toMutableList()
         paths += path.toUri().toURL()
 
-        val classLoader = URLClassLoader.newInstance(paths.toTypedArray())
-        classLoader.setDefaultAssertionStatus(true)
+        val classLoader = URLClassLoader.newInstance(paths.toTypedArray()).also {
+            it.setDefaultAssertionStatus(true)
+        }
         return classLoader.loadClass(fullClassName)
             .getDeclaredConstructor()
             .newInstance()
