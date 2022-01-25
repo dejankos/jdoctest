@@ -16,6 +16,8 @@ internal class DocTestParser(private val path: String) {
         private val javadocFilter = TypeFilter(CtJavaDoc::class.java)
     }
 
+    private val typeInfos = HashMap<String, TypeInfo>()
+
     internal fun extract(): List<DocTestContext> {
         return buildModel().getElements(javadocFilter)
             .filter { it.isJavadoc() }
@@ -31,7 +33,9 @@ internal class DocTestParser(private val path: String) {
         var parent = comment.parent
         while (parent != null && parent !is CtPackage) {
             if (parent is CtType<*>) {
-                return parent.getClassContext()
+                return typeInfos.computeIfAbsent(parent.simpleName) {
+                    (parent as CtType<*>).getClassContext()
+                }
             }
             parent = parent.parent
         }

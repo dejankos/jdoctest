@@ -1,4 +1,4 @@
-package io.github.dejankos;
+package io.github.dejankos.valid;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +22,6 @@ public class ExampleClass implements ExampleInterface {
     public ExampleClass() {
     }
 
-    // doc in interface
     @Override
     public int methodA() {
         return 42;

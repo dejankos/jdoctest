@@ -1,4 +1,4 @@
-package io.github.dejankos;
+package io.github.dejankos.valid;
 
 public interface ExampleInterface {
 

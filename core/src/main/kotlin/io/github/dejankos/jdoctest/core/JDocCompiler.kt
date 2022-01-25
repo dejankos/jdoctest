@@ -29,7 +29,6 @@ internal class JDocCompiler(
     }
 
     private companion object {
-        const val CP_PROPERTY = "java.class.path"
         const val TMP_DIR_PROPERTY = "java.io.tmpdir"
     }
 
@@ -49,6 +48,8 @@ internal class JDocCompiler(
                 try {
                     compileJDocTest(classDir, docTestContext.typeInfo, docTestCode)
                     createClassInstance(classDir, docTestContext.typeInfo.fullJDocTestClassName()).run()
+                } catch (ce: CompileException) {
+                    throw ce
                 } catch (t: Throwable) {
                     throw ExecutionException(t.message ?: "UNKNOWN", t)
                 }
