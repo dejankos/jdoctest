@@ -16,7 +16,7 @@
         <plugins>
             <plugin>
                 <groupId>io.github.dejankos</groupId>
-                <artifactId>plugin</artifactId>
+                <artifactId>jdoctest-plugin</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
                 <executions>
                     <execution>
@@ -26,6 +26,9 @@
                         <phase>verify</phase>
                     </execution>
                 </executions>
+                <configuration>
+                    <docPath>${project.basedir}/src/main/java/io/github/dejankos/valid</docPath>
+                </configuration>
             </plugin>
         </plugins>
     </build>

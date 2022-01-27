@@ -11,17 +11,18 @@ import org.apache.maven.project.MavenProject
 @Mojo(name = "jdoctest", defaultPhase = LifecyclePhase.VERIFY)
 class JDocTestMojo : AbstractMojo() {
 
-    @Parameter(defaultValue = ".", readonly = true)
-    lateinit var path: String
+    @Parameter(defaultValue = ".")
+    lateinit var docPath: String
 
     @Parameter(defaultValue = "\${project}", required = true, readonly = true)
     lateinit var project: MavenProject
 
     override fun execute() {
         try {
-            JDocTest().processSources(path, project.runtimeClasspathElements)
+            println("docpath" + docPath)
+            JDocTest().processSources(docPath, project.runtimeClasspathElements)
         } catch (e: RuntimeException) {
-            throw MojoExecutionException(e.message, e)
+            throw MojoExecutionException(e.message, e.cause ?: e)
         }
     }
 }

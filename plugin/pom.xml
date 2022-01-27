@@ -40,7 +40,6 @@
     </dependencies>
 
     <build>
-        <!-- Pin the version of the plugins we are using -->
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -57,7 +56,6 @@
         </pluginManagement>
     </build>
 
-    <!-- include the plugin report when building the 'site' -->
     <reporting>
         <plugins>
             <plugin>
