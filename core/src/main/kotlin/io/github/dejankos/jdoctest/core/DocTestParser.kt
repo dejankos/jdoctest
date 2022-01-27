@@ -16,7 +16,7 @@ internal class DocTestParser(private val path: String) {
         private val javadocFilter = TypeFilter(CtJavaDoc::class.java)
     }
 
-    private val typeInfos = HashMap<String, TypeInfo>()
+    private val typeInfos = memoize<CtType<*>, TypeInfo> { it.getTypeContext() }
 
     internal fun extract(): List<DocTestContext> {
         return buildModel().getElements(javadocFilter)
@@ -33,9 +33,7 @@ internal class DocTestParser(private val path: String) {
         var parent = comment.parent
         while (parent != null && parent !is CtPackage) {
             if (parent is CtType<*>) {
-                return typeInfos.computeIfAbsent(parent.simpleName) {
-                    (parent as CtType<*>).getTypeContext()
-                }
+                return typeInfos(parent)
             }
             parent = parent.parent
         }
@@ -74,7 +72,10 @@ internal class DocTestParser(private val path: String) {
 
         return when (state) {
             DocTestState.CLOSED -> res
-            else -> throw ParseException("JDocTest parse error; javadoc fragment ${comment.docComment}", comment.content)
+            else -> throw ParseException(
+                "JDocTest parse error; javadoc fragment ${comment.docComment}",
+                comment.content
+            )
         }
     }
 
@@ -119,5 +120,12 @@ internal class DocTestParser(private val path: String) {
 
     private enum class DocTestState {
         NONE, OPEN, CLOSED
+    }
+
+    private fun <IN : CtType<*>, OUT> memoize(fn: (IN) -> OUT): (IN) -> OUT {
+        val cache: MutableMap<String, OUT> = HashMap()
+        return {
+            cache.getOrPut(it.simpleName) { fn(it) }
+        }
     }
 }
