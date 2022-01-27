@@ -7,7 +7,8 @@ public class SimpleCompileError {
      * <pre>
      * {@code
      * // missing 'new'
-     * SimpleCompileError example = SimpleCompileError();
+     * final SimpleCompileError example = new SimpleCompileError();
+     * example = null;
      * }
      * </pre>
      * </jdoctest>
