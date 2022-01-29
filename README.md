@@ -2,7 +2,7 @@
 
 JDocTest add support for executing documentation examples.  
 This makes sure that examples within your documentation are up-to-date and working.  
-JDocTest works on java POJO classes, records, interfaces and enums.  
+Works on java POJO classes, records, interfaces and enums.  
 Inspired by [rustdoc](https://doc.rust-lang.org/rustdoc/documentation-tests.html#documentation-tests)
 
 ## Usage
