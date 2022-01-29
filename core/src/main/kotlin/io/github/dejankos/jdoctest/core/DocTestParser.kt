@@ -16,7 +16,7 @@ internal class DocTestParser(private val path: String) {
         private val javadocFilter = TypeFilter(CtJavaDoc::class.java)
     }
 
-    private val typeInfos = memoize<CtType<*>, TypeInfo> { it.getTypeContext() }
+    private val typeInfos = typeMemo<CtType<*>, TypeInfo> { it.getTypeContext() }
 
     internal fun extract(): List<DocTestContext> {
         return buildModel().getElements(javadocFilter)
@@ -122,7 +122,7 @@ internal class DocTestParser(private val path: String) {
         NONE, OPEN, CLOSED
     }
 
-    private fun <IN : CtType<*>, OUT> memoize(fn: (IN) -> OUT): (IN) -> OUT {
+    private fun <IN : CtType<*>, OUT> typeMemo(fn: (IN) -> OUT): (IN) -> OUT {
         val cache: MutableMap<String, OUT> = HashMap()
         return {
             cache.getOrPut(it.simpleName) { fn(it) }
