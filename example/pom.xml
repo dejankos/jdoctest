@@ -26,6 +26,7 @@
                         <phase>verify</phase>
                     </execution>
                 </executions>
+                <!-- optional: default is project sources root -->
                 <configuration>
                     <docPath>${project.basedir}/src/main/java/io/github/dejankos/valid</docPath>
                 </configuration>

@@ -54,9 +54,33 @@ All examples available in `example` module.
 ### Passing and failing
 
 Like in regular unit tests JDocTests are considered to "pass" if they compile and run without throwing an exception  
-or assertion errors. 
+or assertion errors.
 
 For validation purposes assertions are enabled in all jdoctest code blocks.
+
+## Plugin
+
+JDocPlugin can be integrated with a Maven project and run on build.  
+Maven task will fail if any violations are found.  
+```
+    <plugin>
+        <groupId>io.github.dejankos</groupId>
+        <artifactId>jdoctest-plugin</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <executions>
+            <execution>
+                <goals>
+                    <goal>jdoctest</goal>
+                </goals>
+                <phase>verify</phase>
+            </execution>
+        </executions>
+        <!-- optional: default is project sources root -->
+        <configuration>
+            <docPath>${project.basedir}/src/main/java/io/github/dejankos/valid</docPath>
+        </configuration>
+    </plugin>
+```
 
 ## License
 
