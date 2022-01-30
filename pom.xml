@@ -20,9 +20,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.code.style>official</kotlin.code.style>
         <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
-        <kotlin-jdk8.version>1.5.10</kotlin-jdk8.version>
+        <kotlin-jdk8.version>1.6.0</kotlin-jdk8.version>
         <slf4j.version>[1.7.33,)</slf4j.version>
-        <junit.version>5.6.0</junit.version>
+        <junit.version>5.8.2</junit.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
