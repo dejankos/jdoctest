@@ -12,16 +12,15 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>core</name>
 
+    <properties>
+        <spoon-core.version>10.0.0</spoon-core.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>fr.inria.gforge.spoon</groupId>
             <artifactId>spoon-core</artifactId>
-            <version>10.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.33</version>
+            <version>${spoon-core.version}</version>
         </dependency>
     </dependencies>
 </project>
