@@ -33,8 +33,9 @@ internal class JDocCompiler(
     }
 
     fun runAll() {
-        scopedDir(jDocTestPath) { _ ->
+        scopedDir(jDocTestPath) {
             docsTest.forEach { ctx ->
+                log.info("Processing doc test sources for class ${ctx.typeInfo.name}")
                 runClassDocTest(ctx)
             }
         }
@@ -62,6 +63,7 @@ internal class JDocCompiler(
         typeInfo: TypeInfo,
         docTestCode: DocTestCode
     ) {
+        log.debug("Compiling source ${docTestCode.originalContent}")
         val source = createClassSource(workingDir, typeInfo, docTestCode)
         compileClassSource(source).diagnostics.forEach {
             @Suppress("NON_EXHAUSTIVE_WHEN")
@@ -79,6 +81,7 @@ internal class JDocCompiler(
     }
 
     private fun createClassInstance(path: Path, fullClassName: String): Runnable {
+        log.debug("Creating instance of $fullClassName")
         val paths = classpathElements.map { Path.of(it).toUri().toURL() }.toMutableList()
         paths += path.toUri().toURL()
 
@@ -96,6 +99,7 @@ internal class JDocCompiler(
         typeInfo: TypeInfo,
         docTestCode: DocTestCode
     ): Path {
+        log.debug("Creating source file on $path for ${typeInfo.name}")
         val pkgDir = Files.createDirectories(
             Path.of(
                 path.toString(),
