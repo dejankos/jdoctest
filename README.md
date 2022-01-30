@@ -1,3 +1,5 @@
+[![Build Status](https://app.travis-ci.com/dejankos/jdoctest.svg?branch=main)](https://app.travis-ci.com/dejankos/jdoctest)
+
 # JDocTest
 
 JDocTest add support for executing documentation examples.  
