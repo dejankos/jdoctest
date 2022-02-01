@@ -1,5 +1,7 @@
 package io.github.dejankos.valid;
 
+import org.junit.jupiter.api.Assertions;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,6 +57,7 @@ public class ExampleClass implements ExampleInterface {
      *     set.add(v);
      *
      *     assert set.size() == 1;
+     *     Assertions.assertEquals(1, set.size()); // external dep check
      *     }
      * </pre>
      * </jdoctest>
@@ -63,6 +66,7 @@ public class ExampleClass implements ExampleInterface {
      * @param b second
      */
     public Map<String, String> getMap(String a, String b) {
+        Assertions.assertNotNull(a);
         HashMap<String, String> map = new HashMap<>();
         map.put(a, b);
 

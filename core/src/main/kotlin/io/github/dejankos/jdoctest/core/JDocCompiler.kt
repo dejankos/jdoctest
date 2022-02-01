@@ -25,7 +25,7 @@ internal class JDocCompiler(
     }
     private val classpath by lazy {
         classpathElements
-            .joinToString(separator = "", prefix = File.pathSeparator) { it }
+            .joinToString(separator = File.pathSeparator) { it }
     }
 
     private companion object {
@@ -119,10 +119,7 @@ internal class JDocCompiler(
         val diagnostics = DiagnosticCollector<JavaFileObject>()
         val fileManager = compiler.getStandardFileManager(diagnostics, null, null)
 
-        val optionList: MutableList<String> = ArrayList()
-        optionList.add("-classpath")
-        optionList.add(classpath)
-
+        val optionList = listOf("-classpath", classpath)
         fileManager.use {
             val fileObject = fileManager.getJavaFileObjects(source)
             compiler.getTask(null, fileManager, diagnostics, optionList, null, fileObject).call()

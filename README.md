@@ -15,7 +15,7 @@ as long as code is properly enclosed in @code tags.
 ### Examples
 
 ```java 
- /**
+    /**
      * <jdoctest>
      * <pre>
      *     {@code
