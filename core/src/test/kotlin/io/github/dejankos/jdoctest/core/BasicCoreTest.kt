@@ -12,9 +12,7 @@ class BasicCoreTest {
             JDocTest()
                 .processSources(
                     "../example/src/main/java/io/github/dejankos/valid",
-                    listOf(
-                        "../example/target/classes"
-                    )
+                    CLASSPATH_ELEMENTS
                 )
         }
     }
@@ -25,9 +23,7 @@ class BasicCoreTest {
             JDocTest()
                 .processSources(
                     "../example/src/main/java/io/github/dejankos/invalid/compile",
-                    listOf(
-                        "../example/target/classes"
-                    )
+                    CLASSPATH_ELEMENTS
                 )
         }
     }

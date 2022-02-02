@@ -19,19 +19,19 @@ class JDocTestMojo : AbstractMojo() {
 
     override fun execute() {
         try {
-            val cp = project.runtimeClasspathElements.toMutableList()
-            cp += project.basedir?.listFiles()
-                ?.filter { it.path.contains("target") }
-                ?.flatMap { target ->
-                    target?.listFiles()
-                        ?.find { it.path.contains("dependency") }
-                        ?.listFiles()
-                        ?.map { it.absolutePath } ?: emptyList()
-                } ?: throw IllegalStateException("Can't access project base dir")
-
+            val cp = project.runtimeClasspathElements.plus(projectDependencies())
             JDocTest().processSources(docPath, cp)
         } catch (e: RuntimeException) {
             throw MojoExecutionException(e.message, e.cause ?: e)
         }
     }
+
+    private fun projectDependencies() = project.basedir?.listFiles()
+        ?.filter { it.path.contains("target") }
+        ?.flatMap { target ->
+            target?.listFiles()
+                ?.find { it.path.contains("dependency") }
+                ?.listFiles()
+                ?.map { it.absolutePath } ?: emptyList()
+        } ?: throw IllegalStateException("Can't access project base dir")
 }

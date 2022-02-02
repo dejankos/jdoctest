@@ -11,9 +11,7 @@ class RuntimeErrorTest {
             JDocTest()
                 .processSources(
                     "../example/src/main/java/io/github/dejankos/invalid/runtime",
-                    listOf(
-                        "../example/target/classes"
-                    )
+                    CLASSPATH_ELEMENTS
                 )
         }
     }
