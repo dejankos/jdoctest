@@ -6,6 +6,7 @@ import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
+import java.util.concurrent.Callable
 import javax.tools.Diagnostic
 import javax.tools.DiagnosticCollector
 import javax.tools.JavaFileObject
@@ -48,7 +49,7 @@ internal class JDocCompiler(
             scopedDir(Path.of(jDocTestPath.toString(), "${System.currentTimeMillis()}")) { classDir ->
                 try {
                     compileJDocTest(classDir, docTestContext.typeInfo, docTestCode)
-                    createClassInstance(classDir, docTestContext.typeInfo.fullJDocTestClassName()).run()
+                    createClassInstance(classDir, docTestContext.typeInfo.fullJDocTestClassName()).call()
                 } catch (ce: CompileException) {
                     throw ce
                 } catch (t: Throwable) {
@@ -80,7 +81,7 @@ internal class JDocCompiler(
         }
     }
 
-    private fun createClassInstance(path: Path, fullClassName: String): Runnable {
+    private fun createClassInstance(path: Path, fullClassName: String): Callable<*> {
         log.debug("Creating instance of $fullClassName")
         val paths = classpathElements.map { Path.of(it).toUri().toURL() }.toMutableList()
         paths += path.toUri().toURL()
@@ -91,7 +92,7 @@ internal class JDocCompiler(
         return classLoader.loadClass(fullClassName)
             .getDeclaredConstructor()
             .newInstance()
-            as Runnable
+            as Callable<*>
     }
 
     private fun createClassSource(
@@ -134,9 +135,10 @@ internal class JDocCompiler(
             ${typeInfo.imports.joinAsImportMultiline()}
             ${docTestCode.docTestImports.joinMultiline()}
             
-            public class ${typeInfo.name}_JDocTest implements Runnable {
-                public void run() {
+            public class ${typeInfo.name}_JDocTest implements java.util.concurrent.Callable {
+                public Object call() throws Exception {
                     ${docTestCode.docTestCode.joinMultiline()}
+                    return null;
                 }
             }
         """
