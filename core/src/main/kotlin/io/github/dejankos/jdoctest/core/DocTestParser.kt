@@ -18,8 +18,8 @@ internal class DocTestParser(private val path: String) {
 
     private val typeInfos = typeMemo<CtType<*>, TypeInfo> { it.getTypeContext() }
 
-    internal fun extract(): List<DocTestContext> {
-        return buildModel().getElements(javadocFilter)
+    internal fun extract() =
+        buildModel().getElements(javadocFilter)
             .filter { it.isJavadoc() }
             .filter { it.isDocTest() }
             .mapNotNull { jDoc ->
@@ -27,7 +27,6 @@ internal class DocTestParser(private val path: String) {
                     DocTestContext(it, parseJavadoc(jDoc))
                 }
             }
-    }
 
     private fun extractTypeData(comment: CtComment): TypeInfo? {
         var parent = comment.parent
