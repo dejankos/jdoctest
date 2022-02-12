@@ -1,4 +1,4 @@
-[![Build Status](https://app.travis-ci.com/dejankos/jdoctest.svg?branch=main)](https://app.travis-ci.com/dejankos/jdoctest)
+![Build status](https://github.com/dejankos/jdoctest/actions/workflows/ci.yml/badge.svg?branch=main)
 
 # JDocTest
 
