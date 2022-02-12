@@ -83,8 +83,7 @@ internal class JDocCompiler(
 
     private fun createClassInstance(path: Path, fullClassName: String): Callable<*> {
         log.debug("Creating instance of $fullClassName")
-        val paths = classpathElements.map { Path.of(it).toUri().toURL() }.toMutableList()
-        paths += path.toUri().toURL()
+        val paths = classpathElements.map { Path.of(it).toUri().toURL() } + path.toUri().toURL()
 
         val classLoader = URLClassLoader.newInstance(paths.toTypedArray()).also {
             it.setDefaultAssertionStatus(true)

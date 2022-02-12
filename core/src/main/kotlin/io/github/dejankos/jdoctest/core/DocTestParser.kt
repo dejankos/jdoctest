@@ -80,16 +80,11 @@ internal class DocTestParser(private val path: String) {
 
     private fun extractDocCode(javadoc: JavadocInlineTag) =
         javadoc.content.lineSequence()
-            .fold(mutableListOf<String>() to mutableListOf<String>()) { acc, line ->
-                when (line.contains("import")) {
-                    true -> {
-                        acc.first += line
-                    }
-                    else -> {
-                        acc.second += line
-                    }
-                }
-                acc
+            .fold(listOf<String>() to listOf<String>()) { acc, line ->
+                if (line.contains("import"))
+                    acc.first + line to acc.second
+                else
+                    acc.first to acc.second + line
             }
             .run {
                 val (imports, code) = this

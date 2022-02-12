@@ -9,7 +9,14 @@ public interface ExampleInterface {
      * <jdoctest>
      * <pre>
      * {@code
-     *    System.out.println("hello!")
+     *  //create instance
+     *  ExampleInterface example = new ExampleClass();
+     *
+     *  // invoke
+     *  int value = example.methodA();
+     *
+     *  // assert as expected
+     *  assert value >= 0;
      * }
      * </pre>
      * </jdoctest>

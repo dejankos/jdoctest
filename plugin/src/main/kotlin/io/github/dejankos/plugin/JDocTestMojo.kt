@@ -19,7 +19,7 @@ class JDocTestMojo : AbstractMojo() {
 
     override fun execute() {
         try {
-            val cp = project.runtimeClasspathElements.plus(projectDependencies())
+            val cp = project.runtimeClasspathElements + projectDependencies()
             JDocTest().processSources(docPath, cp)
         } catch (e: RuntimeException) {
             throw MojoExecutionException(e.message, e.cause ?: e)
