@@ -1,4 +1,5 @@
 ![Build status](https://github.com/dejankos/jdoctest/actions/workflows/ci.yml/badge.svg?branch=main)
+[![codecov](https://codecov.io/gh/dejankos/jdoctest/branch/main/graph/badge.svg?token=CXGV9O3NNZ)](https://codecov.io/gh/dejankos/jdoctest)
 
 # JDocTest
 
